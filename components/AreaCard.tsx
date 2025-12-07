@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { AreaStatus, FileUpload } from '../types';
-import { CheckCircle, AlertCircle, X, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, X, Image as ImageIcon, Trash2, Check } from 'lucide-react';
 
 interface AreaCardProps {
   id: string;
@@ -68,7 +68,13 @@ const AreaCard: React.FC<AreaCardProps> = ({
               : 'text-gray-400 hover:text-gray-600 hover:bg-white/50 scale-95'
           }`}
         >
-          <CheckCircle size={18} className={status === 'ok' ? 'fill-current text-white bg-success rounded-full' : ''} />
+          <span
+            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+              status === 'ok' ? 'border-success bg-success/10 text-success' : 'border-gray-300 text-gray-300'
+            }`}
+          >
+            <Check size={14} strokeWidth={3} />
+          </span>
           ปกติ
         </button>
         <button
