@@ -376,16 +376,27 @@ const App: React.FC = () => {
                     CHECK-IN
                 </span>
             </div>
-            <div className="flex gap-4 border-t border-gray-100 pt-4">
-                <div>
-                    <p className="text-xs text-gray-400">อาคาร</p>
-                    <p className="font-semibold text-gray-700">{session?.building}</p>
-                </div>
-                <div className="w-px bg-gray-100 h-8"></div>
-                <div>
-                    <p className="text-xs text-gray-400">ชั้น</p>
-                    <p className="font-semibold text-gray-700">{session?.floor}</p>
-                </div>
+            <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+              <div>
+                <p className="text-xs text-gray-400">อาคาร</p>
+                <p className="font-semibold text-gray-700">{session?.building}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">ชั้น</p>
+                <p className="font-semibold text-gray-700">{session?.floor}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">ผู้เช่า (ชื่อ)</p>
+                <p className="font-semibold text-gray-700">
+                  {session?.hgName || '-'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">เบอร์ติดต่อ</p>
+                <p className="font-semibold text-gray-700">
+                  {session?.hgPhone || '-'}
+                </p>
+              </div>
             </div>
         </div>
       </header>

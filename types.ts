@@ -5,6 +5,8 @@ export interface SessionData {
   floor: string;
   roomId: string;
   status: 'waiting_form' | 'completed' | 'expired';
+  hgName?: string;
+  hgPhone?: string;
 }
 
 export type AreaStatus = 'pending' | 'ok' | 'problem';
