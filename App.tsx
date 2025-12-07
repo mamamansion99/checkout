@@ -158,6 +158,18 @@ const App: React.FC = () => {
       return;
     }
 
+    // 2. Validation: For any "มีปัญหา" items, require note + photo
+    const problemItems = ROOM_AREAS.filter(area => {
+      const data = formState[area.id];
+      return data.status === 'problem' && (
+        !data.note.trim() || data.files.length === 0
+      );
+    });
+    if (problemItems.length > 0) {
+      alert(`กรุณากรอกหมายเหตุและแนบรูปสำหรับจุดที่มีปัญหา:\n- ${problemItems.map(i => i.label).join('\n- ')}`);
+      return;
+    }
+
     if (!signature) {
       alert('กรุณาลงลายเซ็นก่อนส่งผลการตรวจ');
       return;
