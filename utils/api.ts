@@ -1,42 +1,66 @@
 import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 
-// Google Apps Script Web App endpoint (provided)
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxIbdYXyOFqy6hElce6Jp8SMrMOxhF_Nl9v8DIum6Vf-bB8yq58cAi2ee6r1ceF-ds/exec';
+// 1. Keep GAS for getting Room Info (It's fast and good for database lookups)
+const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz19P9rowz8apDT7RiosyuMUL4qsiDnUGc2ypbKL_Q71XCRZFXGNgSD5l-UryIhA9f1/exec'; 
 
-// Export a flag to let the UI know we are using fake data
-export const IS_MOCK = BACKEND_URL.includes('YOUR_SCRIPT_ID_HERE');
+// 2. Use n8n for Submission (It handles heavy images + PDF generation better)
+const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook/your-production-webhook-id';
+
+export const IS_MOCK = false; // Set to false to use real APIs
 
 /**
- * Parses the flowId from the URL query parameters
+ * Helper: Compress Image before converting to Base64
+ * This solves the "Image not stored" / Payload too large issue
  */
+const compressImage = async (file: File, maxWidth = 1024, quality = 0.7): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const elem = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Scale down
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        elem.width = width;
+        elem.height = height;
+        const ctx = elem.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        ctx?.canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Compression failed'));
+          },
+          'image/jpeg', // Force JPEG for better compression
+          quality
+        );
+      };
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export const getFlowIdFromUrl = (): string | null => {
   const params = new URLSearchParams(window.location.search);
   return params.get('flowId');
 };
 
 /**
- * Fetches the session data (Room info) based on flowId
+ * 1. GET Room Info -> Calls Google Apps Script
  */
 export const getSessionInfo = async (flowId: string): Promise<SessionData> => {
-  // Mock logic for development if BACKEND_URL is not set or for testing
-  if (IS_MOCK) {
-     console.warn('Backend URL not configured. Returning mock data.');
-     return new Promise((resolve) => {
-       setTimeout(() => {
-         resolve({
-           ok: true,
-           flowId,
-           building: 'A',
-           floor: '1',
-           roomId: 'A101',
-           status: 'waiting_form'
-         });
-       }, 1000);
-     });
-  }
-
   try {
-    const response = await fetch(`${BACKEND_URL}?flowId=${flowId}`);
+    // We send flowId as a query param
+    const response = await fetch(`${GAS_SCRIPT_URL}?flowId=${flowId}`);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -46,30 +70,12 @@ export const getSessionInfo = async (flowId: string): Promise<SessionData> => {
 };
 
 /**
- * Submits the inspection data
+ * 2. POST Submission -> Calls n8n Webhook
  */
 export const submitInspection = async (payload: SubmitPayload): Promise<SubmitResponse> => {
-  // Mock logic
-  if (IS_MOCK) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ok: true,
-          roomId: payload.fields.roomId,
-          pdfUrl: 'https://example.com/fake-pdf',
-          signatureUrl: 'https://example.com/fake-sig'
-        });
-      }, 2000);
-    });
-  }
-
   try {
-    // Note: Google Apps Script Web Apps require 'text/plain' or 'application/x-www-form-urlencoded' 
-    // to avoid CORS preflight issues in some browser environments, 
-    // but standard fetch with 'application/json' usually works if the script handles OPTIONS or if mapped correctly.
-    // For this implementation, we assume standard JSON POST.
-    
-    const response = await fetch(BACKEND_URL, {
+    // Send directly to n8n
+    const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,21 +86,25 @@ export const submitInspection = async (payload: SubmitPayload): Promise<SubmitRe
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Failed to submit inspection:', error);
+    console.error('Failed to submit to n8n:', error);
     throw error;
   }
 };
 
 /**
- * Helper to convert File to Base64
+ * Updated fileToBase64 to include compression
  */
-export const fileToBase64 = (file: File): Promise<string> => {
+export const fileToBase64 = async (file: File): Promise<string> => {
+  // 1. Compress first
+  const compressedBlob = await compressImage(file);
+  
+  // 2. Convert to Base64
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressedBlob);
     reader.onload = () => {
       const result = reader.result as string;
-      // Remove data:image/xyz;base64, prefix for the raw base64 string
+      // Remove data:image/... prefix
       const base64Clean = result.split(',')[1];
       resolve(base64Clean);
     };
@@ -102,14 +112,11 @@ export const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-/**
- * Helper to get DataURL for preview (includes mime type prefix)
- */
 export const fileToDataUrl = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
