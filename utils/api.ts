@@ -1,7 +1,7 @@
 import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 
-// TODO: Replace with your actual Google Apps Script Web App URL
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbx_YOUR_SCRIPT_ID_HERE/exec';
+// Google Apps Script Web App endpoint (provided)
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxIbdYXyOFqy6hElce6Jp8SMrMOxhF_Nl9v8DIum6Vf-bB8yq58cAi2ee6r1ceF-ds/exec';
 
 // Export a flag to let the UI know we are using fake data
 export const IS_MOCK = BACKEND_URL.includes('YOUR_SCRIPT_ID_HERE');
@@ -26,9 +26,9 @@ export const getSessionInfo = async (flowId: string): Promise<SessionData> => {
          resolve({
            ok: true,
            flowId,
-           building: 'B',
-           floor: '5',
-           roomId: 'B503',
+           building: 'A',
+           floor: '1',
+           roomId: 'A101',
            status: 'waiting_form'
          });
        }, 1000);
