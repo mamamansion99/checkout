@@ -1,0 +1,7 @@
+{
+  "name": "Mama Mansion Inspection",
+  "description": "A mobile-first room inspection web app in Thai, featuring photo uploads, signature pad, and backend integration.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
