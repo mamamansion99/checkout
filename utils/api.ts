@@ -4,7 +4,7 @@ import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz19P9rowz8apDT7RiosyuMUL4qsiDnUGc2ypbKL_Q71XCRZFXGNgSD5l-UryIhA9f1/exec'; 
 
 // 2. Use n8n for Submission (It handles heavy images + PDF generation better)
-const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook-test/06b0cb9e-bf7a-4498-adf0-63994c16e8e6';
+const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook/06b0cb9e-bf7a-4498-adf0-63994c16e8e6';
 
 export const IS_MOCK = false; // Set to false to use real APIs
 
