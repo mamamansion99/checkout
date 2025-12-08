@@ -3,9 +3,8 @@ import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 // 1. Keep GAS for getting Room Info (It's fast and good for database lookups)
 const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz19P9rowz8apDT7RiosyuMUL4qsiDnUGc2ypbKL_Q71XCRZFXGNgSD5l-UryIhA9f1/exec'; 
 
-// 2. Use n8n for Submission (It handles heavy images + PDF generation better)
-// Currently points to the TEST webhook URL; swap to production when ready.
-const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook-test/7994b505-d8c4-43a6-adef-93ad9827d5fb';
+// 2. Use n8n for Submission (production webhook handles heavy images + PDF generation better)
+const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook/7994b505-d8c4-43a6-adef-93ad9827d5fb';
 
 export const IS_MOCK = false; // Set to false to use real APIs
 
