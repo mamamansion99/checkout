@@ -89,7 +89,7 @@ const SignaturePad: React.FC<SignaturePadProps> = ({ onEnd }) => {
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
           <span className="w-1.5 h-6 bg-secondary rounded-full block"></span>
-          ลายเซ็นผู้เช่า
+          ลายเซ็นผู้ตรวจ
         </h3>
         <button 
           onClick={clear}
