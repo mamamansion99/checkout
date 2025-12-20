@@ -4,7 +4,8 @@ export interface SessionData {
   building: string;
   floor: string;
   roomId: string;
-  status: 'waiting_form' | 'completed' | 'expired';
+  status: 'START' | 'INSPECTION_DONE' | 'COMPLETED';
+  checkinDate?: string;
   hgName?: string;
   hgPhone?: string;
 }

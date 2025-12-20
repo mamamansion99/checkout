@@ -24,7 +24,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ status }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-blue-50 to-cyan-50 flex flex-col items-center justify-center p-6">
+    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 flex flex-col items-center justify-center p-6">
       
       {/* Animation Container */}
       <div className="relative mb-12">
@@ -41,8 +41,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ status }) => {
         </div>
 
         {/* Floating elements */}
-        <Search className="absolute -right-8 top-0 text-cyan-400 w-6 h-6 animate-blob" />
-        <Wifi className="absolute -left-6 bottom-0 text-blue-300 w-5 h-5 animate-blob animation-delay-2000" />
+        <Search className="absolute -right-8 top-0 text-amber-400 w-6 h-6 animate-blob" />
+        <Wifi className="absolute -left-6 bottom-0 text-indigo-300 w-5 h-5 animate-blob animation-delay-2000" />
       </div>
 
       {/* Text Content */}
@@ -55,7 +55,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ status }) => {
           </p>
         </div>
         
-        <p className="text-xs text-gray-400 mt-4">Safe & Secure Check-in System</p>
+        <p className="text-xs text-gray-400 mt-4">Safe & Secure Check-out System</p>
       </div>
 
       {/* Progress Line */}

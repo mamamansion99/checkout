@@ -11,7 +11,7 @@ import {
 import AreaCard from './components/AreaCard';
 import SignaturePad from './components/SignaturePad';
 import LoadingScreen from './components/LoadingScreen';
-import { getFlowIdFromUrl, getSessionInfo, submitInspection, fileToBase64, fileToDataUrl, IS_MOCK } from './utils/api';
+import { getFlowIdFromUrl, getSessionInfo, submitCheckoutInspection, fileToBase64, fileToDataUrl, IS_MOCK } from './utils/api';
 import { Loader2, ArrowRight, FileText, CheckCircle2, Building2, Search, QrCode, TestTube2, BarChart3 } from 'lucide-react';
 
 // --- Types for State ---
@@ -56,10 +56,14 @@ const App: React.FC = () => {
     setError(null);
     try {
       const data = await getSessionInfo(id);
-      if (!data.ok || data.status !== 'waiting_form') {
-        setError(data.status === 'completed' 
-          ? 'รายการนี้ได้ทำการตรวจรับไปเรียบร้อยแล้ว' 
-          : 'ไม่พบข้อมูลการจอง หรือลิงก์หมดอายุ');
+      if (!data.ok) {
+        setError('ไม่พบข้อมูลการเช็คเอาต์ หรือลิงก์หมดอายุ');
+      } else if (data.status !== 'START') {
+        setError(
+          data.status === 'INSPECTION_DONE' || data.status === 'COMPLETED'
+            ? 'รายการนี้ได้ทำการตรวจเช็คเอาต์ไปเรียบร้อยแล้ว'
+            : 'ไม่พบข้อมูลการเช็คเอาต์ หรือลิงก์หมดอายุ'
+        );
       } else {
         setSession(data);
       }
@@ -171,13 +175,13 @@ const App: React.FC = () => {
     }
 
     if (!signature) {
-      alert('กรุณาลงลายเซ็นก่อนส่งผลการตรวจ');
+      alert('กรุณาลงลายเซ็นก่อนส่งผลตรวจเช็คเอาต์');
       return;
     }
     
     if (!session) return;
 
-    if (!confirm('ยืนยันการส่งผลตรวจ? เมื่อส่งแล้วจะไม่สามารถแก้ไขได้')) return;
+    if (!confirm('ยืนยันการส่งผลตรวจเช็คเอาต์? เมื่อส่งแล้วจะไม่สามารถแก้ไขได้')) return;
 
     setSubmitting(true);
 
@@ -217,7 +221,7 @@ const App: React.FC = () => {
       };
 
       // 2. Send API
-      const res = await submitInspection(payload);
+      const res = await submitCheckoutInspection(payload);
       
       if (res.ok) {
         setSuccessData({ pdfUrl: res.pdfUrl, roomId: res.roomId });
@@ -264,12 +268,12 @@ const App: React.FC = () => {
   if (showSuccess && successData) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-white">
-         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-soft animate-bounce">
+        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-soft animate-bounce">
           <CheckCircle2 size={48} className="text-success" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">ตรวจรับห้องพักเรียบร้อย!</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">ตรวจเช็คเอาต์เรียบร้อย!</h1>
         <p className="text-gray-500 mb-8">
-          ข้อมูลห้อง {successData.roomId} ถูกบันทึกและส่งเข้าระบบแล้ว
+          ข้อมูลห้อง {successData.roomId} ถูกบันทึกและอัปเดตสถานะเช็คเอาต์แล้ว
         </p>
         
         <div className="space-y-4 w-full max-w-xs">
@@ -296,7 +300,7 @@ const App: React.FC = () => {
   // 4. Starter Screen (Manual Input) - Shown if no session loaded yet
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 p-6 flex flex-col justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 p-6 flex flex-col justify-center">
         {IS_MOCK && (
           <div className="absolute top-0 left-0 w-full bg-yellow-100 text-yellow-800 text-xs font-bold px-4 py-2 text-center flex items-center justify-center gap-2 z-50">
             <TestTube2 size={14} />
@@ -306,11 +310,11 @@ const App: React.FC = () => {
 
         <div className="max-w-md mx-auto w-full bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-float border border-white">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
+            <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
               <QrCode size={32} />
             </div>
             <h1 className="text-2xl font-bold text-gray-800">Mama Mansion</h1>
-            <p className="text-gray-500">ระบบตรวจรับห้องพักออนไลน์</p>
+            <p className="text-gray-500">ระบบตรวจเช็คเอาต์และส่งคืนห้องพักออนไลน์</p>
           </div>
 
           <form onSubmit={handleManualSubmit} className="space-y-4">
@@ -361,22 +365,22 @@ const App: React.FC = () => {
 
       {/* Header / Landing */}
       <header className="px-6 pt-10 pb-6 relative overflow-hidden">
-        {/* Decorative background blobs - Blue & Cyan */}
-        <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-        <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+        {/* Decorative background blobs - Indigo & Amber */}
+        <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+        <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
 
         <h1 className="text-3xl font-bold text-gray-800 mb-2 relative z-10">
-          Mama Mansion <br/> <span className="text-primary text-xl font-normal">Room Inspection</span>
+          Mama Mansion <br/> <span className="text-primary text-xl font-normal">Check-out Inspection</span>
         </h1>
         <p className="text-gray-500 text-sm mb-6 relative z-10">
-          แบบฟอร์มตรวจรับสภาพห้องพักก่อนเข้าอยู่ เพื่อความสบายใจของทั้งสองฝ่าย
+          แบบฟอร์มตรวจเช็คเอาต์เพื่อบันทึกความเสียหายหรือของหาย ก่อนคืนห้องพักอย่างโปร่งใส
         </p>
 
         {/* Room Info Card */}
         <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-soft border border-white relative z-10">
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-50 text-primary rounded-xl">
+                    <div className="p-3 bg-indigo-50 text-primary rounded-xl">
                         <Building2 size={24} />
                     </div>
                     <div>
@@ -384,8 +388,8 @@ const App: React.FC = () => {
                         <h2 className="text-2xl font-bold text-gray-800">{session?.roomId}</h2>
                     </div>
                 </div>
-                <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
-                    CHECK-IN
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                    CHECK-OUT
                 </span>
             </div>
             <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
@@ -409,6 +413,12 @@ const App: React.FC = () => {
                   {session?.hgPhone || '-'}
                 </p>
               </div>
+              <div>
+                <p className="text-xs text-gray-400">วันที่เช็กอิน</p>
+                <p className="font-semibold text-gray-700">
+                  {session?.checkinDate || '-'}
+                </p>
+              </div>
             </div>
         </div>
       </header>
@@ -416,19 +426,19 @@ const App: React.FC = () => {
       {!started && (
         <div className="px-6">
             <div className="bg-white/60 rounded-3xl p-6 mb-8 text-sm text-gray-600 space-y-2 border border-white">
-                <p>👋 <strong>สวัสดีค่ะ!</strong> ขั้นตอนการตรวจรับห้อง:</p>
+                <p>👋 <strong>สวัสดีค่ะ!</strong> ขั้นตอนการตรวจเช็คเอาต์:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                    <li>เดินตรวจสอบอุปกรณ์ต่างๆ ในห้อง</li>
-                    <li>หากพบจุดชำรุด ให้เลือก <strong>"มีปัญหา"</strong></li>
-                    <li>ถ่ายรูปจุดที่มีปัญหาแนบมาด้วย</li>
-                    <li>ลงชื่อยืนยันในส่วนท้ายสุด</li>
+                    <li>เดินตรวจหาความเสียหายหรือของที่สูญหาย</li>
+                    <li>หากพบจุดชำรุด ให้เลือก <strong>"มีปัญหา"</strong> และระบุรายละเอียด</li>
+                    <li>ถ่ายรูปประกอบทุกจุดที่มีปัญหา เพื่อบันทึกเป็นหลักฐาน</li>
+                    <li>ลงชื่อยืนยันในส่วนท้ายสุดก่อนส่งผล</li>
                 </ul>
             </div>
             <button
                 onClick={startInspection}
-                className="w-full bg-slate-800 text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 hover:bg-slate-700 transition-all"
+                className="w-full bg-gradient-to-r from-primary to-accent text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 hover:from-primary/90 hover:to-accent/90 transition-all"
             >
-                เริ่มตรวจห้องพัก <ArrowRight size={20} />
+                เริ่มตรวจเช็คเอาต์ <ArrowRight size={20} />
             </button>
         </div>
       )}
@@ -473,11 +483,11 @@ const App: React.FC = () => {
 
         {/* Global Notes */}
         <div className="bg-white rounded-3xl p-5 shadow-soft mb-6 border border-white/50">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">ข้อเสนอแนะเพิ่มเติม</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">บันทึกเพิ่มเติมขณะเช็คเอาต์</h3>
             <textarea 
                 value={globalNote}
                 onChange={(e) => setGlobalNote(e.target.value)}
-                placeholder="มีอะไรอยากบอกเราเพิ่มเติมไหมคะ?..."
+                placeholder="แจ้งความเสียหายเพิ่มเติม รายการที่คืนแล้ว หรือข้อมูลอื่นๆ..."
                 className="w-full p-4 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 min-h-[100px]"
             />
         </div>
@@ -507,7 +517,7 @@ const App: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            ส่งผลตรวจห้องพัก <CheckCircle2 />
+                            ส่งผลตรวจเช็คเอาต์ <CheckCircle2 />
                         </>
                     )}
                 </button>

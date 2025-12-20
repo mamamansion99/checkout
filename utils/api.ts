@@ -1,10 +1,10 @@
 import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 
 // 1. Keep GAS for getting Room Info (It's fast and good for database lookups)
-const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz19P9rowz8apDT7RiosyuMUL4qsiDnUGc2ypbKL_Q71XCRZFXGNgSD5l-UryIhA9f1/exec'; 
+const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3u6oLAlRgMesNMc0R_VEj2NfP-crXpx7kaCDEEZapy6H7mvrdT4a-CBM1GlFUBsPaoA/exec'; 
 
-// 2. Use n8n for Submission (production webhook handles heavy images + PDF generation better)
-const N8N_WEBHOOK_URL = 'https://n8n.srv1112305.hstgr.cloud/webhook/7994b505-d8c4-43a6-adef-93ad9827d5fb';
+// 2. Use n8n for Submission (Dedicated checkout webhook)
+const N8N_CHECKOUT_WEBHOOK = 'https://n8n.srv1112305.hstgr.cloud/webhook-test/form-receiver';
 
 export const IS_MOCK = false; // Set to false to use real APIs
 
@@ -72,10 +72,10 @@ export const getSessionInfo = async (flowId: string): Promise<SessionData> => {
 /**
  * 2. POST Submission -> Calls n8n Webhook
  */
-export const submitInspection = async (payload: SubmitPayload): Promise<SubmitResponse> => {
+export const submitCheckoutInspection = async (payload: SubmitPayload): Promise<SubmitResponse> => {
   try {
     // Send directly to n8n
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(N8N_CHECKOUT_WEBHOOK, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
