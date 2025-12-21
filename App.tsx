@@ -6,13 +6,15 @@ import {
   FileUpload, 
   ROOM_AREAS, 
   SubmitPayload,
-  AreaStatus
+  AreaStatus,
+  InboxFlow,
+  TaskSummary
 } from './types';
 import AreaCard from './components/AreaCard';
 import SignaturePad from './components/SignaturePad';
 import LoadingScreen from './components/LoadingScreen';
-import { getFlowIdFromUrl, getSessionInfo, submitCheckoutInspection, fileToBase64, fileToDataUrl, IS_MOCK } from './utils/api';
-import { Loader2, ArrowRight, FileText, CheckCircle2, Building2, Search, QrCode, TestTube2, BarChart3 } from 'lucide-react';
+import { getFlowIdFromUrl, getSessionInfo, submitCheckoutInspection, fileToBase64, fileToDataUrl, IS_MOCK, getTasksInbox } from './utils/api';
+import { Loader2, ArrowRight, FileText, CheckCircle2, Building2, Search, QrCode, TestTube2, BarChart3, CalendarClock, TrendingUp } from 'lucide-react';
 
 // --- Types for State ---
 type FormState = Record<string, {
@@ -29,6 +31,8 @@ const App: React.FC = () => {
   const [session, setSession] = useState<SessionData | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successData, setSuccessData] = useState<{pdfUrl: string, roomId: string} | null>(null);
+  const [inbox, setInbox] = useState<InboxFlow[] | null>(null);
+  const [loadingInbox, setLoadingInbox] = useState(false);
   
   // Manual Entry State
   const [manualId, setManualId] = useState('');
@@ -81,10 +85,28 @@ const App: React.FC = () => {
       // If URL has ID, load immediately
       fetchSessionData(flowId);
     } else {
-      // If no ID, stop loading and show manual entry screen
-      setLoading(false);
+      // If no ID, load inbox
+      loadInbox();
     }
   }, []);
+
+  const loadInbox = async () => {
+    setLoading(true);
+    setLoadingInbox(true);
+    try {
+      const res = await getTasksInbox();
+      if (res.ok) {
+        setInbox(res.flows || []);
+      } else {
+        setError('โหลดรายการงานไม่สำเร็จ');
+      }
+    } catch (err) {
+      setError('เกิดข้อผิดพลาดในการโหลดงาน');
+    } finally {
+      setLoading(false);
+      setLoadingInbox(false);
+    }
+  };
 
   // --- Progress Logic ---
   const totalItems = ROOM_AREAS.length;
@@ -298,7 +320,7 @@ const App: React.FC = () => {
   // 4. Starter Screen (Manual Input) - Shown if no session loaded yet
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 p-6 flex flex-col justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 p-6">
         {IS_MOCK && (
           <div className="absolute top-0 left-0 w-full bg-yellow-100 text-yellow-800 text-xs font-bold px-4 py-2 text-center flex items-center justify-center gap-2 z-50">
             <TestTube2 size={14} />
@@ -306,47 +328,48 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <div className="max-w-md mx-auto w-full bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-float border border-white">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
-              <QrCode size={32} />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800">Mama Mansion</h1>
-            <p className="text-gray-500">ระบบตรวจเช็คเอาต์และส่งคืนห้องพักออนไลน์</p>
-          </div>
-
-          <form onSubmit={handleManualSubmit} className="space-y-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 ml-1">
-                ระบุรหัสตรวจสอบ (Flow ID)
-              </label>
+              <h1 className="text-3xl font-bold text-gray-800">งานเช็คเอาต์วันนี้</h1>
+              <p className="text-gray-500">รวมงานตรวจห้อง / ตู้เย็น / ที่จอดรถ พร้อมเดดไลน์และสถานะ</p>
+            </div>
+            <form onSubmit={handleManualSubmit} className="flex gap-2">
               <div className="relative">
                 <input
                   type="text"
                   value={manualId}
                   onChange={(e) => setManualId(e.target.value)}
-                  placeholder={IS_MOCK ? "ลองพิมพ์อะไรก็ได้ เช่น TEST" : "เช่น Ue905...-B503"}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  autoFocus
+                  placeholder="ใส่ Flow ID เพื่อเปิดฟอร์ม"
+                  className="w-full md:w-72 pl-10 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-primary/20 transition-all"
                 />
                 <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
               </div>
-              <p className="text-xs text-gray-400 mt-2 ml-1">
-                {IS_MOCK 
-                  ? "* ในโหมด Demo พิมพ์อะไรก็ได้เพื่อทดสอบระบบ"
-                  : "* ปกติรหัสนี้จะมาพร้อมกับลิงก์ที่ได้รับทาง LINE หรือ Email"
-                }
-              </p>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={!manualId.trim()}
-              className="w-full bg-primary text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              ตรวจสอบข้อมูล
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={!manualId.trim()}
+                className="px-4 py-3 rounded-xl bg-primary text-white font-semibold shadow-lg hover:bg-primary/90 disabled:opacity-50"
+              >
+                เปิดฟอร์ม
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 shadow-soft border border-white">
+            {loadingInbox ? (
+              <div className="flex items-center gap-2 text-gray-500 px-2 py-4"><Loader2 className="animate-spin" /> กำลังโหลดงาน...</div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {inbox && inbox.length > 0 ? (
+                  inbox.map(flow => (
+                    <InboxCard key={flow.flowId} flow={flow} />
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-10">ไม่พบงานเช็คเอาต์ที่ค้างอยู่</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -532,3 +555,81 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+// --- Extra Components ---
+const statusColor = (status: string) => {
+  if (status === 'DONE' || status === 'COMPLETED') return 'bg-green-100 text-green-700';
+  return 'bg-amber-100 text-amber-700';
+};
+
+const typeLabel = (type: string) => {
+  if (type === 'INSPECTION') return 'ROOM';
+  if (type === 'FRIDGE') return 'FRIDGE';
+  if (type === 'CAR') return 'PARKING';
+  return type;
+};
+
+const InboxCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
+  const progressPercent = Math.round((flow.progress || 0) * 100);
+  const hasOverdue = flow.overdue;
+  const chips = flow.tasks.map(t => typeLabel(t.type));
+
+  const goToForm = () => {
+    window.location.href = `?flowId=${flow.flowId}`;
+  };
+
+  return (
+    <div className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div>
+          <p className="text-xs text-gray-400">ROOM</p>
+          <h3 className="text-xl font-bold text-gray-800">{flow.roomId || flow.flowId}</h3>
+        </div>
+        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${hasOverdue ? 'bg-red-100 text-red-700' : 'bg-indigo-50 text-indigo-700'}`}>
+          {hasOverdue ? 'เกินกำหนด' : `D-${flow.daysLeft ?? '-'}`}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-3">
+        {chips.map((chip, idx) => (
+          <span key={idx} className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+            {chip}
+          </span>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+        <CalendarClock size={14} /> Due: {flow.dueAt || '-'} | Escalate: {flow.escalateAt || '-'}
+      </div>
+
+      <div className="mb-3">
+        <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <span className="flex items-center gap-1"><TrendingUp size={12} /> ความคืบหน้า</span>
+          <span className="text-primary font-semibold">{progressPercent}%</span>
+        </div>
+        <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-primary to-secondary" style={{ width: `${progressPercent}%` }}></div>
+        </div>
+      </div>
+
+      <div className="space-y-2 mb-4">
+        {flow.tasks.map(t => (
+          <div key={t.taskId} className="flex items-center justify-between text-sm bg-gray-50 px-3 py-2 rounded-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-semibold">{typeLabel(t.type)}</span>
+              <span className={`px-2 py-1 rounded-full text-xs ${statusColor(t.status)}`}>{t.status || 'PENDING'}</span>
+            </div>
+            <span className="text-xs text-gray-400">{t.taskId}</span>
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={goToForm}
+        className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow"
+      >
+        เปิดฟอร์มเช็คเอาต์
+      </button>
+    </div>
+  );
+};

@@ -1,4 +1,5 @@
 import { SessionData, SubmitPayload, SubmitResponse } from '../types';
+import { InboxFlow, FlowDetail } from '../types';
 
 // 1. Keep GAS for getting Room Info (It's fast and good for database lookups)
 const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwLfksDjH_cNPhvO6gcDw8lWNRRtalwPXROnRgM1Hwexs02Zruh10XAZFq798KyiIn-rw/exec'; 
@@ -119,4 +120,17 @@ export const fileToDataUrl = (file: File): Promise<string> => {
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
+};
+
+/**
+ * New endpoints for inbox + flow detail
+ */
+export const getTasksInbox = async (): Promise<{ ok: boolean; flows: InboxFlow[] }> => {
+  const response = await fetch(`${GAS_SCRIPT_URL}?action=tasksInbox`);
+  return response.json();
+};
+
+export const getFlowDetail = async (flowId: string): Promise<{ ok: boolean; flow?: FlowDetail['flow']; tasks?: FlowDetail['tasks']; error?: string }> => {
+  const response = await fetch(`${GAS_SCRIPT_URL}?action=flowDetail&flowId=${flowId}`);
+  return response.json();
 };

@@ -55,3 +55,42 @@ export const ROOM_AREAS = [
   { id: 'SHOWER_HEATER', label: 'ฝักบัวและเครื่องทำน้ำอุ่น' },
   { id: 'WALL_FLOOR_CEILING', label: 'พื้น / ผนัง / เพดาน' },
 ];
+
+export interface TaskSummary {
+  taskId: string;
+  type: 'INSPECTION' | 'FRIDGE' | 'CAR' | string;
+  status: string;
+  dueAt?: string;
+  escalateAt?: string;
+  daysLeft?: number | null;
+  overdue?: boolean;
+}
+
+export interface InboxFlow {
+  flowId: string;
+  roomId: string;
+  dueAt?: string;
+  escalateAt?: string;
+  daysLeft?: number | null;
+  overdue?: boolean;
+  tasks: TaskSummary[];
+  progress: number;
+}
+
+export interface FlowDetail {
+  flow: {
+    flowId: string;
+    roomId: string;
+    status: string;
+    dueAt?: string;
+    escalateAt?: string;
+    tenantName?: string;
+    inspectionTaskId?: string;
+    fridgeTaskId?: string;
+    carTaskId?: string;
+    depositAmount?: number | null;
+    refundStatus?: string;
+    refundDue?: number | null;
+  };
+  tasks: TaskSummary[];
+}
