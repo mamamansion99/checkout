@@ -89,7 +89,7 @@ const App: React.FC = () => {
       fetchSessionData(flowId);
       loadFlowDetail(flowId);
     } else {
-      setLoading(false);
+      loadInbox();
     }
   }, []);
 
@@ -334,8 +334,16 @@ const App: React.FC = () => {
 
   // 4. Starter Screen (Inbox / Manual Input) - Shown if no session loaded yet
   if (!session) {
+    const filtered = (inbox || []).filter(flow => {
+      const matchSearch = flow.roomId?.toLowerCase().includes(searchTerm.toLowerCase()) || flow.flowId.toLowerCase().includes(searchTerm.toLowerCase());
+      let matchTab = true;
+      if (filterTab === 'today') matchTab = flow.daysLeft === 0;
+      if (filterTab === 'overdue') matchTab = flow.overdue || (typeof flow.daysLeft === 'number' && flow.daysLeft < 0);
+      return matchSearch && matchTab;
+    });
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 p-6 flex flex-col justify-center">
+      <div className="min-h-screen bg-gray-50">
         {IS_MOCK && (
           <div className="absolute top-0 left-0 w-full bg-yellow-100 text-yellow-800 text-xs font-bold px-4 py-2 text-center flex items-center justify-center gap-2 z-50">
             <TestTube2 size={14} />
@@ -343,47 +351,52 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <div className="max-w-md mx-auto w-full bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-float border border-white">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
-              <QrCode size={32} />
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">งานเช็คเอาต์วันนี้</h1>
+              <p className="text-gray-500 text-sm">Today’s Checkout Tasks</p>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">Mama Mansion</h1>
-            <p className="text-gray-500">ระบบตรวจเช็คเอาต์และส่งคืนห้องพักออนไลน์</p>
+            <div className="text-sm text-gray-500 bg-white px-3 py-2 rounded-full shadow-sm border border-gray-100">
+              {new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })}
+            </div>
           </div>
 
-          <form onSubmit={handleManualSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 ml-1">
-                ระบุรหัสตรวจสอบ (Flow ID)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={manualId}
-                  onChange={(e) => setManualId(e.target.value)}
-                  placeholder={IS_MOCK ? "ลองพิมพ์อะไรก็ได้ เช่น TEST" : "เช่น Ue905...-B503"}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  autoFocus
-                />
-                <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex items-center gap-2">
+            <Search size={18} className="text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="ค้นหาเลขห้อง / Search Room ID..."
+              className="w-full focus:outline-none text-gray-700"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {(['all','today','overdue'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setFilterTab(tab)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold border ${
+                  filterTab === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200'
+                }`}
+              >
+                {tab === 'all' ? 'ทั้งหมด (All)' : tab === 'today' ? 'วันนี้ (Today)' : 'เกินกำหนด (Overdue)'}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-4 pb-6">
+            {loadingInbox && <div className="flex items-center gap-2 text-gray-500 px-2 py-4"><Loader2 className="animate-spin" /> กำลังโหลดงาน...</div>}
+            {!loadingInbox && filtered.length === 0 && (
+              <div className="bg-white rounded-2xl p-6 text-center text-gray-500 border border-dashed border-gray-200">
+                ไม่พบงานที่ตรงกับเงื่อนไข
               </div>
-              <p className="text-xs text-gray-400 mt-2 ml-1">
-                {IS_MOCK 
-                  ? "* ในโหมด Demo พิมพ์อะไรก็ได้เพื่อทดสอบระบบ"
-                  : "* ปกติรหัสนี้จะมาพร้อมกับลิงก์ที่ได้รับทาง LINE หรือ Email"
-                }
-              </p>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={!manualId.trim()}
-              className="w-full bg-primary text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              ตรวจสอบข้อมูล
-            </button>
-          </form>
+            )}
+            {filtered.map(flow => (
+              <InboxListCard key={flow.flowId} flow={flow} />
+            ))}
+          </div>
         </div>
       </div>
     );
