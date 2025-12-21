@@ -412,6 +412,7 @@ const App: React.FC = () => {
   const showContent = !flowTasks || started;
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
+  const inspectionTask = flowTasks?.find(t => t.type === 'INSPECTION');
 
   // 5. Main App (Inspection Form)
   return (
@@ -475,6 +476,27 @@ const App: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {inspectionTask && (
+            <div className="mt-4 bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs text-gray-400">Inspection Task</p>
+                  <h3 className="text-lg font-bold text-gray-800">{typeLabel(inspectionTask.type)}</h3>
+                  <p className="text-sm text-gray-500">{inspectionTask.taskId}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(inspectionTask.status)}`}>
+                  {inspectionTask.status || 'PENDING'}
+                </span>
+              </div>
+              <button
+                onClick={() => startInspection()}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow"
+              >
+                ไปยังฟอร์มตรวจห้อง (Inspection)
+              </button>
+            </div>
+          )}
         </div>
       )}
 
