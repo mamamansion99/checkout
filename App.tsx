@@ -420,42 +420,40 @@ const App: React.FC = () => {
             </div>
             <div className="space-y-2">
               {flowTasks.map(t => (
-                <div key={t.taskId} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-xl">
+                <div key={t.taskId} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-xl gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-gray-800">{typeLabel(t.type)}</span>
                     <span className={`px-2 py-1 rounded-full text-xs ${statusColor(t.status)}`}>{t.status || 'PENDING'}</span>
                   </div>
-                  <div className="text-xs text-gray-400">{t.taskId}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">{t.taskId}</span>
+                    {t.type === 'INSPECTION' && (
+                      <button
+                        onClick={() => startInspection()}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-primary to-secondary text-white shadow"
+                      >
+                        เปิดฟอร์ม
+                      </button>
+                    )}
+                    {t.type === 'FRIDGE' && (
+                      <button
+                        onClick={() => alert('ฟอร์มคืนตู้เย็นจะเปิดใช้งานเร็วๆ นี้')}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 shadow-sm"
+                      >
+                        เปิดฟอร์ม
+                      </button>
+                    )}
+                    {t.type === 'CAR' && (
+                      <button
+                        onClick={() => alert('ฟอร์มคืนที่จอด/รถจะเปิดใช้งานเร็วๆ นี้')}
+                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 shadow-sm"
+                      >
+                        เปิดฟอร์ม
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-3">
-              <button
-                onClick={() => startInspection()}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow"
-              >
-                ไปยังฟอร์มตรวจห้อง (Inspection)
-              </button>
-              {(hasFridge || hasCar) && (
-                <div className="mt-2 grid grid-cols-1 gap-2">
-                  {hasFridge && (
-                    <button
-                      onClick={() => alert('ฟอร์มคืนตู้เย็นจะเปิดใช้งานเร็วๆ นี้')}
-                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-sm border border-gray-200"
-                    >
-                      ฟอร์มคืนตู้เย็น (Fridge)
-                    </button>
-                  )}
-                  {hasCar && (
-                    <button
-                      onClick={() => alert('ฟอร์มคืนที่จอด/รถจะเปิดใช้งานเร็วๆ นี้')}
-                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-sm border border-gray-200"
-                    >
-                      ฟอร์มคืนที่จอด/รถ (Parking)
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>
