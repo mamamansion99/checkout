@@ -35,6 +35,8 @@ const App: React.FC = () => {
   const [successData, setSuccessData] = useState<{pdfUrl: string, roomId: string} | null>(null);
   const [inbox, setInbox] = useState<InboxFlow[] | null>(null);
   const [loadingInbox, setLoadingInbox] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterTab, setFilterTab] = useState<'all' | 'today' | 'overdue'>('all');
   
   // Manual Entry State
   const [manualId, setManualId] = useState('');
@@ -332,10 +334,18 @@ const App: React.FC = () => {
     );
   }
 
-  // 4. Starter Screen (Manual Input) - Shown if no session loaded yet
+  // 4. Starter Screen (Inbox / Manual Input) - Shown if no session loaded yet
   if (!session) {
+    const filtered = (inbox || []).filter(flow => {
+      const matchSearch = flow.roomId?.toLowerCase().includes(searchTerm.toLowerCase()) || flow.flowId.toLowerCase().includes(searchTerm.toLowerCase());
+      let matchTab = true;
+      if (filterTab === 'today') matchTab = flow.daysLeft === 0;
+      if (filterTab === 'overdue') matchTab = flow.overdue || (typeof flow.daysLeft === 'number' && flow.daysLeft < 0);
+      return matchSearch && matchTab;
+    });
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-slate-50 to-amber-50 p-6">
+      <div className="min-h-screen bg-gray-50">
         {IS_MOCK && (
           <div className="absolute top-0 left-0 w-full bg-yellow-100 text-yellow-800 text-xs font-bold px-4 py-2 text-center flex items-center justify-center gap-2 z-50">
             <TestTube2 size={14} />
@@ -343,54 +353,63 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">งานเช็คเอาต์วันนี้</h1>
-              <p className="text-gray-500">รวมงานตรวจห้อง / ตู้เย็น / ที่จอดรถ พร้อมเดดไลน์และสถานะ</p>
+              <h1 className="text-3xl font-bold text-gray-900">งานเช็คเอาต์วันนี้</h1>
+              <p className="text-gray-500 text-sm">Today’s Checkout Tasks</p>
             </div>
-            <form onSubmit={handleManualSubmit} className="flex gap-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={manualId}
-                  onChange={(e) => setManualId(e.target.value)}
-                  placeholder="ใส่ Flow ID เพื่อเปิดฟอร์ม"
-                  className="w-full md:w-72 pl-10 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-                <Search className="absolute left-3 top-3.5 text-gray-400" size={18} />
-              </div>
-              <button
-                type="submit"
-                disabled={!manualId.trim()}
-                className="px-4 py-3 rounded-xl bg-primary text-white font-semibold shadow-lg hover:bg-primary/90 disabled:opacity-50"
-              >
-                เปิดฟอร์ม
-              </button>
-            </form>
+            <div className="text-sm text-gray-500 bg-white px-3 py-2 rounded-full shadow-sm border border-gray-100">
+              {new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })}
+            </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur rounded-3xl p-4 shadow-soft border border-white">
-            {loadingInbox ? (
-              <div className="flex items-center gap-2 text-gray-500 px-2 py-4"><Loader2 className="animate-spin" /> กำลังโหลดงาน...</div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {inbox && inbox.length > 0 ? (
-                  inbox.map(flow => (
-                    <InboxCard key={flow.flowId} flow={flow} />
-                  ))
-                ) : (
-                  <div className="text-center text-gray-500 py-10">ไม่พบงานเช็คเอาต์ที่ค้างอยู่</div>
-                )}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex items-center gap-2">
+            <Search size={18} className="text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="ค้นหาเลขห้อง / Search Room ID..."
+              className="w-full focus:outline-none text-gray-700"
+            />
+            <button
+              onClick={handleManualSubmit}
+              disabled={!manualId.trim()}
+              className="hidden"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {(['all','today','overdue'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setFilterTab(tab)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold border ${
+                  filterTab === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200'
+                }`}
+              >
+                {tab === 'all' ? 'ทั้งหมด (All)' : tab === 'today' ? 'วันนี้ (Today)' : 'เกินกำหนด (Overdue)'}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-4 pb-6">
+            {loadingInbox && <div className="flex items-center gap-2 text-gray-500 px-2 py-4"><Loader2 className="animate-spin" /> กำลังโหลดงาน...</div>}
+            {!loadingInbox && filtered.length === 0 && (
+              <div className="bg-white rounded-2xl p-6 text-center text-gray-500 border border-dashed border-gray-200">
+                ไม่พบงานที่ตรงกับเงื่อนไข
               </div>
             )}
+            {filtered.map(flow => (
+              <InboxListCard key={flow.flowId} flow={flow} />
+            ))}
           </div>
         </div>
       </div>
     );
   }
 
-  const showContent = true; // แสดงส่วนอินโทร/ฟอร์มเสมอ แต่ฟอร์มจะเปิดเมื่อกดเริ่ม
+  const showContent = !flowTasks || started;
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
 
@@ -709,6 +728,51 @@ const InboxCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
       >
         เปิดฟอร์มเช็คเอาต์
       </button>
+    </div>
+  );
+};
+
+const InboxListCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
+  const hasInspection = flow.tasks.some(t => t.type === 'INSPECTION');
+  const dueLabel = () => {
+    if (flow.overdue || (typeof flow.daysLeft === 'number' && flow.daysLeft < 0)) return `Overdue ${Math.abs(flow.daysLeft || 0)} days`;
+    if (typeof flow.daysLeft === 'number') return `D-${flow.daysLeft} Deadline`;
+    return 'Deadline -';
+  };
+
+  const goInspection = () => {
+    window.location.href = `?flowId=${flow.flowId}`;
+  };
+
+  return (
+    <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 space-y-3">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900">{flow.roomId || flow.flowId}</h3>
+          <p className={`text-sm font-semibold ${flow.overdue ? 'text-red-500' : 'text-indigo-500'} flex items-center gap-1`}>
+            <BarChart3 size={14} /> {dueLabel()}
+          </p>
+        </div>
+        <div className={`px-3 py-1 rounded-full text-xs font-bold ${flow.overdue ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+          {flow.overdue ? 'URGENT' : 'ROUTINE'}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {flow.tasks.map(t => (
+          <span key={t.taskId} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-semibold">
+            {typeLabel(t.type)}
+            <span className={`px-2 py-0.5 rounded-full text-xs ${statusColor(t.status)}`}>{t.status || 'PENDING'}</span>
+          </span>
+        ))}
+      </div>
+      {hasInspection && (
+        <button
+          onClick={goInspection}
+          className="w-full mt-2 py-3 rounded-xl bg-primary text-white font-semibold shadow hover:bg-primary/90"
+        >
+          เริ่มตรวจห้อง
+        </button>
+      )}
     </div>
   );
 };
