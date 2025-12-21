@@ -405,7 +405,9 @@ const App: React.FC = () => {
   const showContent = !flowTasks || started;
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
-  const inspectionTask = flowTasks?.find(t => t.type === 'INSPECTION');
+  const inspectionTask = flowTasks?.find(
+    t => t.type === 'INSPECTION' || (t.taskId || '').toUpperCase().includes('T-INS')
+  );
 
   // 5. Main App (Inspection Form)
   return (
