@@ -390,6 +390,8 @@ const App: React.FC = () => {
     );
   }
 
+  const showContent = !flowTasks || started;
+
   // 5. Main App (Inspection Form)
   return (
     <div className="max-w-md mx-auto min-h-screen pb-32">
@@ -400,7 +402,7 @@ const App: React.FC = () => {
       )}
 
       {/* Flow Task Summary */}
-      {flowTasks && (
+      {flowTasks && !started && (
         <div className="px-4 pt-6">
           <div className="bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
             <div className="flex items-center justify-between mb-3">
@@ -437,166 +439,170 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Header / Landing */}
-      <header className="px-6 pt-10 pb-6 relative overflow-hidden">
-        {/* Decorative background blobs - Indigo & Amber */}
-        <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-        <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+      {showContent && (
+        <>
+          {/* Header / Landing */}
+          <header className="px-6 pt-10 pb-6 relative overflow-hidden">
+            {/* Decorative background blobs - Indigo & Amber */}
+            <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+            <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 relative z-10">
-          Mama Mansion <br/> <span className="text-primary text-xl font-normal">Check-out Inspection</span>
-        </h1>
-        <p className="text-gray-500 text-sm mb-6 relative z-10">
-          แบบฟอร์มตรวจเช็คเอาต์เพื่อบันทึกความเสียหายหรือของหาย ก่อนคืนห้องพักอย่างโปร่งใส
-        </p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2 relative z-10">
+              Mama Mansion <br/> <span className="text-primary text-xl font-normal">Check-out Inspection</span>
+            </h1>
+            <p className="text-gray-500 text-sm mb-6 relative z-10">
+              แบบฟอร์มตรวจเช็คเอาต์เพื่อบันทึกความเสียหายหรือของหาย ก่อนคืนห้องพักอย่างโปร่งใส
+            </p>
 
-        {/* Room Info Card */}
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-soft border border-white relative z-10">
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-indigo-50 text-primary rounded-xl">
-                        <Building2 size={24} />
+            {/* Room Info Card */}
+            <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-soft border border-white relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-indigo-50 text-primary rounded-xl">
+                            <Building2 size={24} />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400 font-medium">ROOM</p>
+                            <h2 className="text-2xl font-bold text-gray-800">{session?.roomId}</h2>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs text-gray-400 font-medium">ROOM</p>
-                        <h2 className="text-2xl font-bold text-gray-800">{session?.roomId}</h2>
-                    </div>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                        CHECK-OUT
+                    </span>
                 </div>
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
-                    CHECK-OUT
-                </span>
+                <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+                  <div>
+                    <p className="text-xs text-gray-400">อาคาร</p>
+                    <p className="font-semibold text-gray-700">{session?.building}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">ชั้น</p>
+                    <p className="font-semibold text-gray-700">{session?.floor}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">ผู้เช่า (ชื่อ)</p>
+                    <p className="font-semibold text-gray-700">
+                      {session?.hgName || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">เบอร์ติดต่อ</p>
+                    <p className="font-semibold text-gray-700">
+                      {session?.hgPhone || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">วันที่เช็กอิน</p>
+                    <p className="font-semibold text-gray-700">
+                      {session?.checkinDate || '-'}
+                    </p>
+                  </div>
+                </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
-              <div>
-                <p className="text-xs text-gray-400">อาคาร</p>
-                <p className="font-semibold text-gray-700">{session?.building}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">ชั้น</p>
-                <p className="font-semibold text-gray-700">{session?.floor}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">ผู้เช่า (ชื่อ)</p>
-                <p className="font-semibold text-gray-700">
-                  {session?.hgName || '-'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">เบอร์ติดต่อ</p>
-                <p className="font-semibold text-gray-700">
-                  {session?.hgPhone || '-'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">วันที่เช็กอิน</p>
-                <p className="font-semibold text-gray-700">
-                  {session?.checkinDate || '-'}
-                </p>
-              </div>
-            </div>
-        </div>
-      </header>
+          </header>
 
-      {!started && (
-        <div className="px-6">
-            <div className="bg-white/60 rounded-3xl p-6 mb-8 text-sm text-gray-600 space-y-2 border border-white">
-                <p>👋 <strong>สวัสดีค่ะ!</strong> ขั้นตอนการตรวจเช็คเอาต์:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                    <li>เดินตรวจหาความเสียหายหรือของที่สูญหาย</li>
-                    <li>หากพบจุดชำรุด ให้เลือก <strong>"มีปัญหา"</strong> และระบุรายละเอียด</li>
-                    <li>ถ่ายรูปประกอบทุกจุดที่มีปัญหา เพื่อบันทึกเป็นหลักฐาน</li>
-                    <li>ลงชื่อยืนยันในส่วนท้ายสุดก่อนส่งผล</li>
-                </ul>
-            </div>
-            <button
-                onClick={startInspection}
-                className="w-full bg-gradient-to-r from-primary to-accent text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 hover:from-primary/90 hover:to-accent/90 transition-all"
-            >
-                เริ่มตรวจเช็คเอาต์ <ArrowRight size={20} />
-            </button>
-        </div>
-      )}
-
-      {/* Main Form Section */}
-      <main 
-        ref={formRef} 
-        className={`px-4 mt-8 transition-opacity duration-700 ${started ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 overflow-hidden'}`}
-      >
-        {/* Dynamic Progress Bar */}
-        <div className="mb-6 px-2">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                <BarChart3 size={12} /> ความคืบหน้า
-              </span>
-              <span className="text-xs font-bold text-primary">
-                {completedItems}/{totalItems} รายการ
-              </span>
-            </div>
-            <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                    className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-700 ease-out" 
-                    style={{ width: `${progressPercent}%` }}
-                ></div>
-            </div>
-        </div>
-
-        {ROOM_AREAS.map((area) => (
-          <AreaCard
-            key={area.id}
-            id={area.id}
-            label={area.label}
-            status={formState[area.id].status}
-            note={formState[area.id].note}
-            files={formState[area.id].files}
-            onStatusChange={(status) => handleStatusChange(area.id, status)}
-            onNoteChange={(note) => handleNoteChange(area.id, note)}
-            onFileAdd={(file) => handleFileAdd(area.id, file)}
-            onFileRemove={(name) => handleFileRemove(area.id, name)}
-          />
-        ))}
-
-        {/* Global Notes */}
-        <div className="bg-white rounded-3xl p-5 shadow-soft mb-6 border border-white/50">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">บันทึกเพิ่มเติมขณะเช็คเอาต์</h3>
-            <textarea 
-                value={globalNote}
-                onChange={(e) => setGlobalNote(e.target.value)}
-                placeholder="แจ้งความเสียหายเพิ่มเติม รายการที่คืนแล้ว หรือข้อมูลอื่นๆ..."
-                className="w-full p-4 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 min-h-[100px]"
-            />
-        </div>
-
-        {/* Signature */}
-        <SignaturePad onEnd={setSignature} />
-
-        <div className="h-20"></div> {/* Spacer for sticky button */}
-      </main>
-
-      {/* Sticky Bottom Bar */}
-      {started && (
-        <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 pb-8 z-50">
-            <div className="max-w-md mx-auto">
+          {!started && (
+            <div className="px-6">
+                <div className="bg-white/60 rounded-3xl p-6 mb-8 text-sm text-gray-600 space-y-2 border border-white">
+                    <p>👋 <strong>สวัสดีค่ะ!</strong> ขั้นตอนการตรวจเช็คเอาต์:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        <li>เดินตรวจหาความเสียหายหรือของที่สูญหาย</li>
+                        <li>หากพบจุดชำรุด ให้เลือก <strong>"มีปัญหา"</strong> และระบุรายละเอียด</li>
+                        <li>ถ่ายรูปประกอบทุกจุดที่มีปัญหา เพื่อบันทึกเป็นหลักฐาน</li>
+                        <li>ลงชื่อยืนยันในส่วนท้ายสุดก่อนส่งผล</li>
+                    </ul>
+                </div>
                 <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className={`w-full font-bold text-lg py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 transition-all ${
-                        submitting 
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-primary to-secondary text-white hover:shadow-xl hover:scale-[1.02]'
-                    }`}
+                    onClick={startInspection}
+                    className="w-full bg-gradient-to-r from-primary to-accent text-white font-semibold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 hover:from-primary/90 hover:to-accent/90 transition-all"
                 >
-                    {submitting ? (
-                        <>
-                            <Loader2 className="animate-spin" /> กำลังส่งข้อมูล...
-                        </>
-                    ) : (
-                        <>
-                            ส่งผลตรวจเช็คเอาต์ <CheckCircle2 />
-                        </>
-                    )}
+                    เริ่มตรวจเช็คเอาต์ <ArrowRight size={20} />
                 </button>
             </div>
-        </div>
+          )}
+
+          {/* Main Form Section */}
+          <main 
+            ref={formRef} 
+            className={`px-4 mt-8 transition-opacity duration-700 ${started ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 overflow-hidden'}`}
+          >
+            {/* Dynamic Progress Bar */}
+            <div className="mb-6 px-2">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
+                    <BarChart3 size={12} /> ความคืบหน้า
+                  </span>
+                  <span className="text-xs font-bold text-primary">
+                    {completedItems}/{totalItems} รายการ
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                        className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-700 ease-out" 
+                        style={{ width: `${progressPercent}%` }}
+                    ></div>
+                </div>
+            </div>
+
+            {ROOM_AREAS.map((area) => (
+              <AreaCard
+                key={area.id}
+                id={area.id}
+                label={area.label}
+                status={formState[area.id].status}
+                note={formState[area.id].note}
+                files={formState[area.id].files}
+                onStatusChange={(status) => handleStatusChange(area.id, status)}
+                onNoteChange={(note) => handleNoteChange(area.id, note)}
+                onFileAdd={(file) => handleFileAdd(area.id, file)}
+                onFileRemove={(name) => handleFileRemove(area.id, name)}
+              />
+            ))}
+
+            {/* Global Notes */}
+            <div className="bg-white rounded-3xl p-5 shadow-soft mb-6 border border-white/50">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">บันทึกเพิ่มเติมขณะเช็คเอาต์</h3>
+                <textarea 
+                    value={globalNote}
+                    onChange={(e) => setGlobalNote(e.target.value)}
+                    placeholder="แจ้งความเสียหายเพิ่มเติม รายการที่คืนแล้ว หรือข้อมูลอื่นๆ..."
+                    className="w-full p-4 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 min-h-[100px]"
+                />
+            </div>
+
+            {/* Signature */}
+            <SignaturePad onEnd={setSignature} />
+
+            <div className="h-20"></div> {/* Spacer for sticky button */}
+          </main>
+
+          {/* Sticky Bottom Bar */}
+          {started && (
+            <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 pb-8 z-50">
+                <div className="max-w-md mx-auto">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className={`w-full font-bold text-lg py-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 transition-all ${
+                            submitting 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-primary to-secondary text-white hover:shadow-xl hover:scale-[1.02]'
+                        }`}
+                    >
+                        {submitting ? (
+                            <>
+                                <Loader2 className="animate-spin" /> กำลังส่งข้อมูล...
+                            </>
+                        ) : (
+                            <>
+                                ส่งผลตรวจเช็คเอาต์ <CheckCircle2 />
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Use LoadingScreen for submitting state as well with custom status */}
