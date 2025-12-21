@@ -405,9 +405,7 @@ const App: React.FC = () => {
   const showContent = !flowTasks || started;
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
-  const inspectionTask = flowTasks?.find(
-    t => t.type === 'INSPECTION' || (t.taskId || '').toUpperCase().includes('T-INS')
-  );
+  const inspectionTask = flowTasks?.find(t => isInspectionTask(t));
 
   // 5. Main App (Inspection Form)
   return (
@@ -442,7 +440,7 @@ const App: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">{t.taskId}</span>
-                    {t.type === 'INSPECTION' && (
+                    {isInspectionTask(t) && (
                       <button
                         onClick={() => startInspection()}
                         className="px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-primary to-secondary text-white shadow"
@@ -675,6 +673,10 @@ export default App;
 const statusColor = (status: string) => {
   if (status === 'DONE' || status === 'COMPLETED') return 'bg-green-100 text-green-700';
   return 'bg-amber-100 text-amber-700';
+};
+
+const isInspectionTask = (t: TaskSummary) => {
+  return t.type === 'INSPECTION' && (t.taskId || '').toUpperCase().includes('T-INS');
 };
 
 const typeLabel = (type: string) => {
