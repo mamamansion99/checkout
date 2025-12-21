@@ -191,6 +191,21 @@ const App: React.FC = () => {
     }));
   };
 
+  const openCarForm = (taskId?: string) => {
+    const flowId = session?.flowId || flowMeta?.flowId;
+    const roomId = session?.roomId || flowMeta?.roomId;
+    if (!flowId) {
+      alert('ไม่พบ Flow ID');
+      return;
+    }
+    const params = new URLSearchParams();
+    params.set('flowId', flowId);
+    if (roomId) params.set('roomId', roomId);
+    if (taskId) params.set('taskId', taskId);
+    params.set('assetType', 'CAR');
+    window.location.href = `https://check-out-car.vercel.app/?${params.toString()}`;
+  };
+
   const handleSubmit = async () => {
     // 1. Validation: Check if all items are completed
     const pendingItems = ROOM_AREAS.filter(area => formState[area.id].status === 'pending');
@@ -459,7 +474,7 @@ const App: React.FC = () => {
                     )}
                     {t.type === 'CAR' && (
                       <button
-                        onClick={() => alert('ฟอร์มคืนที่จอด/รถจะเปิดใช้งานเร็วๆ นี้')}
+                        onClick={() => openCarForm(t.taskId)}
                         className="px-3 py-2 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 shadow-sm"
                       >
                         เปิดฟอร์ม
@@ -677,7 +692,8 @@ const statusColor = (status: string) => {
 };
 
 const isInspectionTask = (t: TaskSummary) => {
-  return t.type === 'INSPECTION' && (t.taskId || '').toUpperCase().includes('T-INS');
+  // ใช้ TaskType เป็นตัวตัดสินพอ ไม่ต้องผูกกับรูปแบบ TaskId
+  return t.type === 'INSPECTION';
 };
 
 const typeLabel = (type: string) => {
