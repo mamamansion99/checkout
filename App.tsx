@@ -470,16 +470,16 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {(inspectionTask || session) && (
+          {inspectionTask && (
             <div className="mt-4 bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-xs text-gray-400">Inspection Task</p>
                   <h3 className="text-lg font-bold text-gray-800">ROOM</h3>
-                  <p className="text-sm text-gray-500">{inspectionTask?.taskId || session?.flowId}</p>
+                  <p className="text-sm text-gray-500">{inspectionTask.taskId}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(inspectionTask?.status || 'PENDING')}`}>
-                  {inspectionTask?.status || 'PENDING'}
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(inspectionTask.status)}`}>
+                  {inspectionTask.status || 'PENDING'}
                 </span>
               </div>
               <button
