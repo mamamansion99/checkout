@@ -27,14 +27,12 @@ export interface FileUpload {
 
 export interface SubmitPayload {
   flowId: string;
-  fields: {
-    building: string;
-    floor: string;
-    roomId: string;
-    inspector: string;
-    globalNotes: string;
-    tenantSignature: string; // base64
-  };
+  building: string;
+  floor: string;
+  roomId: string;
+  inspector: string;
+  globalNotes: string;
+  tenantSignature: string; // base64
   metaByArea: Record<string, AreaMeta>;
   files: Omit<FileUpload, 'preview'>[];
 }

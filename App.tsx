@@ -208,14 +208,12 @@ const App: React.FC = () => {
 
       const payload: SubmitPayload = {
         flowId: session.flowId,
-        fields: {
-          building: session.building,
-          floor: session.floor,
-          roomId: session.roomId,
-          inspector: inspectorName || 'ผู้เช่า',
-          globalNotes: globalNote,
-          tenantSignature: signature
-        },
+        building: session.building,
+        floor: session.floor,
+        roomId: session.roomId,
+        inspector: inspectorName || 'ผู้ตรวจ',
+        globalNotes: globalNote,
+        tenantSignature: signature,
         metaByArea,
         files: allFiles
       };
