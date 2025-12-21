@@ -390,7 +390,7 @@ const App: React.FC = () => {
     );
   }
 
-  const showContent = !flowTasks || started;
+  const showContent = true; // แสดงส่วนอินโทร/ฟอร์มเสมอ แต่ฟอร์มจะเปิดเมื่อกดเริ่ม
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
 
