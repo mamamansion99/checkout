@@ -406,6 +406,7 @@ const App: React.FC = () => {
   const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
   const hasCar = flowTasks?.some(t => t.type === 'CAR');
   const inspectionTask = flowTasks?.find(t => isInspectionTask(t));
+  const hasInspectionRow = flowTasks?.some(t => isInspectionTask(t));
 
   // 5. Main App (Inspection Form)
   return (
@@ -470,7 +471,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {inspectionTask && (
+          {hasInspectionRow && inspectionTask && (
             <div className="mt-4 bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
               <div className="flex items-center justify-between mb-3">
                 <div>
