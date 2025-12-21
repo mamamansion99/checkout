@@ -13,7 +13,7 @@ import {
 import AreaCard from './components/AreaCard';
 import SignaturePad from './components/SignaturePad';
 import LoadingScreen from './components/LoadingScreen';
-import { getFlowIdFromUrl, getSessionInfo, submitCheckoutInspection, fileToBase64, fileToDataUrl, IS_MOCK, getTasksInbox } from './utils/api';
+import { getFlowIdFromUrl, getSessionInfo, submitCheckoutInspection, fileToBase64, fileToDataUrl, IS_MOCK, getTasksInbox, getFlowDetail } from './utils/api';
 import { Loader2, ArrowRight, FileText, CheckCircle2, Building2, Search, QrCode, TestTube2, BarChart3, CalendarClock, TrendingUp } from 'lucide-react';
 
 // --- Types for State ---
@@ -29,6 +29,8 @@ const App: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
+  const [flowTasks, setFlowTasks] = useState<TaskSummary[] | null>(null);
+  const [flowMeta, setFlowMeta] = useState<null | { flowId: string; roomId: string; status: string; dueAt?: string; escalateAt?: string; tenantName?: string }> (null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successData, setSuccessData] = useState<{pdfUrl: string, roomId: string} | null>(null);
   const [inbox, setInbox] = useState<InboxFlow[] | null>(null);
@@ -84,6 +86,7 @@ const App: React.FC = () => {
     if (flowId) {
       // If URL has ID, load immediately
       fetchSessionData(flowId);
+      loadFlowDetail(flowId);
     } else {
       // If no ID, load inbox
       loadInbox();
@@ -105,6 +108,18 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
       setLoadingInbox(false);
+    }
+  };
+
+  const loadFlowDetail = async (id: string) => {
+    try {
+      const res = await getFlowDetail(id);
+      if (res.ok) {
+        if (res.flow) setFlowMeta(res.flow as any);
+        if (res.tasks) setFlowTasks(res.tasks);
+      }
+    } catch (err) {
+      // swallow; not critical for form
     }
   };
 
@@ -381,6 +396,44 @@ const App: React.FC = () => {
       {IS_MOCK && (
         <div className="fixed top-0 left-0 w-full bg-yellow-100 text-yellow-800 text-xs font-bold px-4 py-1 text-center z-[100] shadow-sm flex items-center justify-center gap-2">
            <TestTube2 size={12} /> Demo Mode: ข้อมูลจำลอง (Mock Data)
+        </div>
+      )}
+
+      {/* Flow Task Summary */}
+      {flowTasks && (
+        <div className="px-4 pt-6">
+          <div className="bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs text-gray-400">FLOW</p>
+                <h2 className="text-lg font-bold text-gray-800">{flowMeta?.flowId || session?.flowId}</h2>
+                <p className="text-sm text-gray-500">ลิงก์นี้กลับมาเปิดดูสถานะงานได้จนกว่าจะเสร็จ</p>
+              </div>
+              <div className="text-right text-xs text-gray-500">
+                <div>ครบกำหนด: {flowMeta?.dueAt || '-'}</div>
+                <div>Escalate: {flowMeta?.escalateAt || '-'}</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {flowTasks.map(t => (
+                <div key={t.taskId} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-gray-800">{typeLabel(t.type)}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs ${statusColor(t.status)}`}>{t.status || 'PENDING'}</span>
+                  </div>
+                  <div className="text-xs text-gray-400">{t.taskId}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3">
+              <button
+                onClick={() => startInspection()}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow"
+              >
+                ไปยังฟอร์มตรวจห้อง (Inspection)
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
