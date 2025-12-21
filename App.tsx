@@ -391,6 +391,8 @@ const App: React.FC = () => {
   }
 
   const showContent = !flowTasks || started;
+  const hasFridge = flowTasks?.some(t => t.type === 'FRIDGE');
+  const hasCar = flowTasks?.some(t => t.type === 'CAR');
 
   // 5. Main App (Inspection Form)
   return (
@@ -434,6 +436,26 @@ const App: React.FC = () => {
               >
                 ไปยังฟอร์มตรวจห้อง (Inspection)
               </button>
+              {(hasFridge || hasCar) && (
+                <div className="mt-2 grid grid-cols-1 gap-2">
+                  {hasFridge && (
+                    <button
+                      onClick={() => alert('ฟอร์มคืนตู้เย็นจะเปิดใช้งานเร็วๆ นี้')}
+                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-sm border border-gray-200"
+                    >
+                      ฟอร์มคืนตู้เย็น (Fridge)
+                    </button>
+                  )}
+                  {hasCar && (
+                    <button
+                      onClick={() => alert('ฟอร์มคืนที่จอด/รถจะเปิดใช้งานเร็วๆ นี้')}
+                      className="w-full py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold shadow-sm border border-gray-200"
+                    >
+                      ฟอร์มคืนที่จอด/รถ (Parking)
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
