@@ -1,7 +1,7 @@
 import { SessionData, SubmitPayload, SubmitResponse } from '../types';
 
 // 1. Keep GAS for getting Room Info (It's fast and good for database lookups)
-const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyylvSKMFP9Y6Om1TdAsYEHpxa4zE1sYLos5PuWoJTIbNtqzdS3nLbvTwvcloc5pTTVww/exec'; 
+const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwLfksDjH_cNPhvO6gcDw8lWNRRtalwPXROnRgM1Hwexs02Zruh10XAZFq798KyiIn-rw/exec'; 
 
 // 2. Use n8n for Submission (Dedicated checkout webhook)
 const N8N_CHECKOUT_WEBHOOK = 'https://n8n.srv1112305.hstgr.cloud/webhook-test/form-receiver';
