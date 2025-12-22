@@ -197,6 +197,8 @@ const App: React.FC = () => {
     return upper === 'DONE' || upper === 'COMPLETED';
   };
 
+  const isFridgeTask = (t: TaskSummary) => t.type === 'FRIDGE' || t.type === 'FRG';
+
   const openCarForm = (taskId?: string) => {
     const flowId = session?.flowId || flowMeta?.flowId;
     const roomId = session?.roomId || flowMeta?.roomId;
@@ -490,7 +492,7 @@ const App: React.FC = () => {
                         เปิดฟอร์ม
                       </button>
                     )}
-                    {t.type === 'FRIDGE' && (
+                    {isFridgeTask(t) && (
                       <button
                         onClick={() => !isDoneStatus(t.status) && openFrgForm(t.taskId)}
                         disabled={isDoneStatus(t.status)}
@@ -714,7 +716,7 @@ const isInspectionTask = (t: TaskSummary) => {
 
 const typeLabel = (type: string) => {
   if (type === 'INSPECTION') return 'ตรวจห้อง';
-  if (type === 'FRIDGE') return 'ตู้เย็น';
+  if (type === 'FRIDGE' || type === 'FRG') return 'ตู้เย็น';
   if (type === 'CAR') return 'ที่จอด/รถ';
   return type;
 };
