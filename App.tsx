@@ -212,6 +212,21 @@ const App: React.FC = () => {
     window.location.href = `https://check-out-car.vercel.app/?${params.toString()}`;
   };
 
+  const openFrgForm = (taskId?: string) => {
+    const flowId = session?.flowId || flowMeta?.flowId;
+    const roomId = session?.roomId || flowMeta?.roomId;
+    if (!flowId) {
+      alert('ไม่พบ Flow ID');
+      return;
+    }
+    const params = new URLSearchParams();
+    params.set('flowId', flowId);
+    if (roomId) params.set('roomId', roomId);
+    if (taskId) params.set('taskId', taskId);
+    params.set('assetType', 'FRIDGE');
+    window.location.href = `https://checkout-frg.vercel.app/?${params.toString()}`;
+  };
+
   const handleSubmit = async () => {
     // 1. Validation: Check if all items are completed
     const pendingItems = ROOM_AREAS.filter(area => formState[area.id].status === 'pending');
@@ -477,7 +492,7 @@ const App: React.FC = () => {
                     )}
                     {t.type === 'FRIDGE' && (
                       <button
-                        onClick={() => alert('ฟอร์มคืนตู้เย็นจะเปิดใช้งานเร็วๆ นี้')}
+                        onClick={() => !isDoneStatus(t.status) && openFrgForm(t.taskId)}
                         disabled={isDoneStatus(t.status)}
                         className={`px-3 py-2 text-xs font-semibold rounded-lg border shadow-sm ${
                           isDoneStatus(t.status)
