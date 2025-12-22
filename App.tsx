@@ -191,6 +191,12 @@ const App: React.FC = () => {
     }));
   };
 
+  const isDoneStatus = (status?: string) => {
+    if (!status) return false;
+    const upper = status.toUpperCase();
+    return upper === 'DONE' || upper === 'COMPLETED';
+  };
+
   const openCarForm = (taskId?: string) => {
     const flowId = session?.flowId || flowMeta?.flowId;
     const roomId = session?.roomId || flowMeta?.roomId;
@@ -458,8 +464,13 @@ const App: React.FC = () => {
                     <span className="text-xs text-gray-400">{t.taskId}</span>
                     {isInspectionTask(t) && (
                       <button
-                        onClick={() => startInspection()}
-                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-primary to-secondary text-white shadow"
+                        onClick={() => !isDoneStatus(t.status) && startInspection()}
+                        disabled={isDoneStatus(t.status)}
+                        className={`px-3 py-2 text-xs font-semibold rounded-lg shadow ${
+                          isDoneStatus(t.status)
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-primary to-secondary text-white'
+                        }`}
                       >
                         เปิดฟอร์ม
                       </button>
@@ -467,15 +478,25 @@ const App: React.FC = () => {
                     {t.type === 'FRIDGE' && (
                       <button
                         onClick={() => alert('ฟอร์มคืนตู้เย็นจะเปิดใช้งานเร็วๆ นี้')}
-                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 shadow-sm"
+                        disabled={isDoneStatus(t.status)}
+                        className={`px-3 py-2 text-xs font-semibold rounded-lg border shadow-sm ${
+                          isDoneStatus(t.status)
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200'
+                            : 'bg-white text-gray-700 border-gray-200'
+                        }`}
                       >
                         เปิดฟอร์ม
                       </button>
                     )}
                     {t.type === 'CAR' && (
                       <button
-                        onClick={() => openCarForm(t.taskId)}
-                        className="px-3 py-2 text-xs font-semibold rounded-lg bg-white text-gray-700 border border-gray-200 shadow-sm"
+                        onClick={() => !isDoneStatus(t.status) && openCarForm(t.taskId)}
+                        disabled={isDoneStatus(t.status)}
+                        className={`px-3 py-2 text-xs font-semibold rounded-lg border shadow-sm ${
+                          isDoneStatus(t.status)
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200'
+                            : 'bg-white text-gray-700 border-gray-200'
+                        }`}
                       >
                         เปิดฟอร์ม
                       </button>
