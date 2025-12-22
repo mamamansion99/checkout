@@ -370,7 +370,7 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">งานเช็คเอาต์วันนี้</h1>
-              <p className="text-gray-500 text-sm">Today’s Checkout Tasks</p>
+              <p className="text-gray-500 text-sm">รายการที่ต้องทำทั้งหมด</p>
             </div>
             <div className="text-sm text-gray-500 bg-white px-3 py-2 rounded-full shadow-sm border border-gray-100">
               {new Date().toLocaleDateString('th-TH', { day: '2-digit', month: 'short' })}
@@ -382,7 +382,7 @@ const App: React.FC = () => {
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="ค้นหาเลขห้อง / Search Room ID..."
+              placeholder="ค้นหาเลขห้อง..."
               className="w-full focus:outline-none text-gray-700"
             />
           </div>
@@ -396,7 +396,7 @@ const App: React.FC = () => {
                   filterTab === tab ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200'
                 }`}
               >
-                {tab === 'all' ? 'ทั้งหมด (All)' : tab === 'today' ? 'วันนี้ (Today)' : 'เกินกำหนด (Overdue)'}
+                {tab === 'all' ? 'ทั้งหมด' : tab === 'today' ? 'วันนี้' : 'เกินกำหนด'}
               </button>
             ))}
           </div>
@@ -438,13 +438,13 @@ const App: React.FC = () => {
           <div className="bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs text-gray-400">FLOW</p>
+                <p className="text-xs text-gray-400">งานเช็คเอาต์</p>
                 <h2 className="text-lg font-bold text-gray-800">{flowMeta?.flowId || session?.flowId}</h2>
                 <p className="text-sm text-gray-500">ลิงก์นี้กลับมาเปิดดูสถานะงานได้จนกว่าจะเสร็จ</p>
               </div>
               <div className="text-right text-xs text-gray-500">
                 <div>ครบกำหนด: {flowMeta?.dueAt || '-'}</div>
-                <div>Escalate: {flowMeta?.escalateAt || '-'}</div>
+                <div>เร่งด่วน: {flowMeta?.escalateAt || '-'}</div>
               </div>
             </div>
             <div className="space-y-2">
@@ -490,8 +490,8 @@ const App: React.FC = () => {
             <div className="mt-4 bg-white/90 rounded-3xl p-4 shadow-soft border border-white/60">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-xs text-gray-400">Inspection Task</p>
-                  <h3 className="text-lg font-bold text-gray-800">ROOM</h3>
+                  <p className="text-xs text-gray-400">งานตรวจห้อง</p>
+                  <h3 className="text-lg font-bold text-gray-800">ห้อง</h3>
                   <p className="text-sm text-gray-500">{inspectionTask.taskId}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor(inspectionTask.status)}`}>
@@ -502,7 +502,7 @@ const App: React.FC = () => {
                 onClick={() => startInspection()}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow"
               >
-                ไปยังฟอร์มตรวจห้อง (Inspection)
+                ไปยังฟอร์มตรวจห้อง
               </button>
             </div>
           )}
@@ -518,7 +518,7 @@ const App: React.FC = () => {
             <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-2 relative z-10">
-              Mama Mansion <br/> <span className="text-primary text-xl font-normal">Check-out Inspection</span>
+              Mama Mansion <br/> <span className="text-primary text-xl font-normal">ฟอร์มตรวจเช็คเอาต์</span>
             </h1>
             <p className="text-gray-500 text-sm mb-6 relative z-10">
               แบบฟอร์มตรวจเช็คเอาต์เพื่อบันทึกความเสียหายหรือของหาย ก่อนคืนห้องพักอย่างโปร่งใส
@@ -532,7 +532,7 @@ const App: React.FC = () => {
                             <Building2 size={24} />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-400 font-medium">ROOM</p>
+                            <p className="text-xs text-gray-400 font-medium">ห้อง</p>
                             <h2 className="text-2xl font-bold text-gray-800">{session?.roomId}</h2>
                         </div>
                     </div>
@@ -697,9 +697,9 @@ const isInspectionTask = (t: TaskSummary) => {
 };
 
 const typeLabel = (type: string) => {
-  if (type === 'INSPECTION') return 'ROOM';
-  if (type === 'FRIDGE') return 'FRIDGE';
-  if (type === 'CAR') return 'PARKING';
+  if (type === 'INSPECTION') return 'ตรวจห้อง';
+  if (type === 'FRIDGE') return 'ตู้เย็น';
+  if (type === 'CAR') return 'ที่จอด/รถ';
   return type;
 };
 
@@ -716,7 +716,7 @@ const InboxCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
     <div className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-2 mb-2">
         <div>
-          <p className="text-xs text-gray-400">ROOM</p>
+          <p className="text-xs text-gray-400">ห้อง</p>
           <h3 className="text-xl font-bold text-gray-800">{flow.roomId || flow.flowId}</h3>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-semibold ${hasOverdue ? 'bg-red-100 text-red-700' : 'bg-indigo-50 text-indigo-700'}`}>
@@ -771,9 +771,9 @@ const InboxCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
 const InboxListCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
   const hasInspection = flow.tasks.some(t => t.type === 'INSPECTION');
   const dueLabel = () => {
-    if (flow.overdue || (typeof flow.daysLeft === 'number' && flow.daysLeft < 0)) return `Overdue ${Math.abs(flow.daysLeft || 0)} days`;
-    if (typeof flow.daysLeft === 'number') return `D-${flow.daysLeft} Deadline`;
-    return 'Deadline -';
+    if (flow.overdue || (typeof flow.daysLeft === 'number' && flow.daysLeft < 0)) return `เกินกำหนด ${Math.abs(flow.daysLeft || 0)} วัน`;
+    if (typeof flow.daysLeft === 'number') return `เหลือ ${flow.daysLeft} วัน`;
+    return 'ไม่พบกำหนดส่ง';
   };
 
   const goInspection = () => {
@@ -782,15 +782,15 @@ const InboxListCard: React.FC<{ flow: InboxFlow }> = ({ flow }) => {
 
   return (
     <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 space-y-3">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900">{flow.roomId || flow.flowId}</h3>
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">{flow.roomId || flow.flowId}</h3>
           <p className={`text-sm font-semibold ${flow.overdue ? 'text-red-500' : 'text-indigo-500'} flex items-center gap-1`}>
             <BarChart3 size={14} /> {dueLabel()}
           </p>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-bold ${flow.overdue ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-          {flow.overdue ? 'URGENT' : 'ROUTINE'}
+          {flow.overdue ? 'ด่วน' : 'งานประจำ'}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
