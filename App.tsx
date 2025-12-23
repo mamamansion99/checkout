@@ -127,6 +127,7 @@ const App: React.FC = () => {
   const totalItems = ROOM_AREAS.length;
   const completedItems = Object.values(formState).filter(item => item.status !== 'pending').length;
   const progressPercent = Math.round((completedItems / totalItems) * 100);
+  const INSPECTORS = ['Ma', 'KK', 'Kaopan', 'พี่ก้อย', 'พี่ยุ'];
 
   // --- Handlers ---
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -249,6 +250,11 @@ const App: React.FC = () => {
       return;
     }
 
+    if (!inspectorName.trim()) {
+      alert('กรุณาเลือกชื่อผู้ตรวจ');
+      return;
+    }
+
     if (!signature) {
       alert('กรุณาลงลายเซ็นก่อนส่งผลตรวจเช็คเอาต์');
       return;
@@ -286,7 +292,7 @@ const App: React.FC = () => {
         building: session.building,
         floor: session.floor,
         roomId: session.roomId,
-        inspector: inspectorName || 'ผู้ตรวจ',
+        inspector: inspectorName.trim(),
         globalNotes: globalNote,
         tenantSignature: signature,
         metaByArea,
@@ -630,6 +636,22 @@ const App: React.FC = () => {
                         style={{ width: `${progressPercent}%` }}
                     ></div>
                 </div>
+            </div>
+
+            {/* Inspector */}
+            <div className="bg-white rounded-3xl p-5 shadow-soft mb-6 border border-white/50">
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">ผู้ตรวจ</h3>
+              <label className="block text-sm font-medium text-gray-600 mb-2">เลือกชื่อผู้ตรวจ</label>
+              <select
+                value={inspectorName}
+                onChange={(e) => setInspectorName(e.target.value)}
+                className="w-full rounded-xl bg-gray-50 border border-gray-200 p-3 focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+              >
+                <option value="">-- กรุณาเลือก --</option>
+                {INSPECTORS.map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
             </div>
 
             {ROOM_AREAS.map((area) => (
