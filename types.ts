@@ -38,10 +38,11 @@ export interface SubmitPayload {
 }
 
 export interface SubmitResponse {
-  ok: boolean;
-  roomId: string;
-  pdfUrl: string;
-  signatureUrl: string;
+  ok?: boolean;
+  roomId?: string;
+  pdfUrl?: string;
+  signatureUrl?: string;
+  message?: string;
 }
 
 export const ROOM_AREAS = [

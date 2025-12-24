@@ -32,7 +32,7 @@ const App: React.FC = () => {
   const [flowTasks, setFlowTasks] = useState<TaskSummary[] | null>(null);
   const [flowMeta, setFlowMeta] = useState<null | { flowId: string; roomId: string; status: string; dueAt?: string; escalateAt?: string; tenantName?: string }> (null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [successData, setSuccessData] = useState<{pdfUrl: string, roomId: string} | null>(null);
+  const [successData, setSuccessData] = useState<{ pdfUrl?: string; roomId: string; message?: string } | null>(null);
   const [inbox, setInbox] = useState<InboxFlow[] | null>(null);
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -302,11 +302,17 @@ const App: React.FC = () => {
       // 2. Send API
       const res = await submitCheckoutInspection(payload);
       
-      if (res.ok) {
-        setSuccessData({ pdfUrl: res.pdfUrl, roomId: res.roomId });
+      const isAsyncSuccess = res.ok || res.message === 'Workflow was started';
+
+      if (isAsyncSuccess) {
+        setSuccessData({ 
+          pdfUrl: res.pdfUrl, 
+          roomId: res.roomId || session.roomId, 
+          message: res.message 
+        });
         setShowSuccess(true);
       } else {
-        alert('เกิดข้อผิดพลาดจากระบบ: ' + JSON.stringify(res));
+        alert('เกิดข้อผิดพลาดจากระบบ: ' + (res.message ?? JSON.stringify(res)));
       }
 
     } catch (err) {
@@ -354,17 +360,28 @@ const App: React.FC = () => {
         <p className="text-gray-500 mb-8">
           ข้อมูลห้อง {successData.roomId} ถูกบันทึกและอัปเดตสถานะเช็คเอาต์แล้ว
         </p>
+        {successData.message && (
+          <p className="text-gray-400 text-sm mb-4">
+            สถานะระบบ: {successData.message}
+          </p>
+        )}
         
         <div className="space-y-4 w-full max-w-xs">
-          <a 
-            href={successData.pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-primary text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
-          >
-            <FileText size={20} />
-            เปิดไฟล์ PDF
-          </a>
+          {successData.pdfUrl ? (
+            <a 
+              href={successData.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full bg-primary text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
+            >
+              <FileText size={20} />
+              เปิดไฟล์ PDF
+            </a>
+          ) : (
+            <div className="text-sm text-gray-500 bg-gray-100 border border-gray-200 rounded-2xl py-4 px-3">
+              ระบบกำลังสร้างไฟล์ PDF โปรดตรวจสอบลิงก์ที่ส่งผ่านไลน์/อีเมลหลังจากนี้
+            </div>
+          )}
           <button 
             onClick={() => window.close()}
             className="w-full bg-gray-100 text-gray-600 font-semibold py-4 rounded-2xl hover:bg-gray-200 transition-all"

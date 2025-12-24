@@ -83,9 +83,25 @@ export const submitCheckoutInspection = async (payload: SubmitPayload): Promise<
       },
       body: JSON.stringify(payload),
     });
-    
-    const data = await response.json();
-    return data;
+
+    // n8n can reply with only { message: "Workflow was started" } for async flows
+    let data: any = null;
+    try {
+      data = await response.json();
+    } catch (parseErr) {
+      // ignore parse errors; we'll use response.ok
+    }
+
+    const normalized: SubmitResponse = {
+      ...(data && typeof data === 'object' ? data : {}),
+      ok: typeof data?.ok === 'boolean' ? data.ok : response.ok,
+      roomId: data?.roomId ?? payload.roomId,
+      pdfUrl: data?.pdfUrl ?? data?.pdf,
+      signatureUrl: data?.signatureUrl,
+      message: data?.message,
+    };
+
+    return normalized;
   } catch (error) {
     console.error('Failed to submit to n8n:', error);
     throw error;
