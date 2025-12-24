@@ -5,7 +5,7 @@ import { InboxFlow, FlowDetail } from '../types';
 const GAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwLfksDjH_cNPhvO6gcDw8lWNRRtalwPXROnRgM1Hwexs02Zruh10XAZFq798KyiIn-rw/exec'; 
 
 // 2. Use n8n for Submission (Dedicated checkout webhook)
-const N8N_CHECKOUT_WEBHOOK = 'https://n8n.srv1112305.hstgr.cloud/webhook-test/form-receiver';
+const N8N_CHECKOUT_WEBHOOK = 'https://n8n.srv1112305.hstgr.cloud/webhook/form-receiver';
 
 export const IS_MOCK = false; // Set to false to use real APIs
 
